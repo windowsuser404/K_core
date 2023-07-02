@@ -79,6 +79,7 @@ void addEdge(Graph* graph, int s, int d,Node** nodearray){
 void k_core_decomposition(Graph* graph, Node** nodearray, int core){
 	int j,i;
 	bool changed=true;
+#pragma omp parallel for
 	for(i=source;i<numvertex;i++){
 //		printf("vertex: %d\n",i);
 		if(graph->adjLists[i]){
@@ -90,6 +91,7 @@ void k_core_decomposition(Graph* graph, Node** nodearray, int core){
 	}
 	while(changed){
 		changed=false;
+#pragma omp parallel for private(j) 
 		for(i=source;i<numvertex;i++){
 			Node* node = nodearray[i];
 			if(node->change && node->in_given_core ){
@@ -99,7 +101,7 @@ void k_core_decomposition(Graph* graph, Node** nodearray, int core){
 					Node** neighbours = graph->adjLists[i]->array;
 					int size = graph->adjLists[i]->size;
 					for(j=0;j<size;j++){
-						//below should be atomic
+#pragma omp atomic 
 						neighbours[j]->coreness--;
 						neighbours[j]->change=true;
 						changed=true;
@@ -115,6 +117,7 @@ int main(int argc, char* argv[]) {
 	source = atoi(argv[2]);
     Node** nodearray;
     nodearray = createListofNodes();
+    omp_set_num_threads(4);
     int i;
     int src,dest;
     int core=numvertex/2;
@@ -138,7 +141,7 @@ int main(int argc, char* argv[]) {
  t2 = omp_get_wtime();
 //	printf("algo done\n");
 //	printf("\n");
-	printf("Time taken for %d-core is %f\n",core,t2-t1);
+	printf("Time taken for %d-core in parallel is %f\n",core,t2-t1);
 /*	for(i=0;i<numvertex;i++){
 		if(nodearray[i]->in_given_core){
 			printf("%d, ",i);
