@@ -91,7 +91,7 @@ void k_core_decomposition(Graph* graph, Node** nodearray, int core){
 	}
 	while(changed){
 		changed=false;
-#pragma omp parallel for private(j) 
+#pragma omp parallel for schedule(dynamic) private(j) 
 		for(i=source;i<numvertex;i++){
 			Node* node = nodearray[i];
 			if(node->change && node->in_given_core ){
@@ -120,7 +120,7 @@ int main(int argc, char* argv[]) {
     omp_set_num_threads(4);
     int i;
     int src,dest;
-    int core=numvertex/2;
+    int core = atoi(argv[4]);
     Graph* graph = createAGraph(numvertex);
     FILE* file;
     file = fopen(argv[3],"r");
